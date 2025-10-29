@@ -1,0 +1,2 @@
+# This file ensures the uploads directory is created when cloning the repository
+# The directory will contain uploaded files during runtime
