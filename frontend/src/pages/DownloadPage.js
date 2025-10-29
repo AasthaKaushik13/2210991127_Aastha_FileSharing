@@ -61,7 +61,7 @@ const DownloadPage = () => {
     fetchFileInfo();
   }, [fileId, getFileInfo]);
 
-  // Update countdown timer
+  // Update countdown timer code
   useEffect(() => {
     if (!fileInfo) return;
 
