@@ -1,4 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect
+} from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -17,7 +22,17 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Configure axios defaults
+  // 🔹 Backend API base URL (Create React App compatible)
+  const API = process.env.REACT_APP_API_BASE_URL;
+
+  // 🔹 Configure axios base URL ONCE
+  useEffect(() => {
+    if (API) {
+      axios.defaults.baseURL = API;
+    }
+  }, [API]);
+
+  // 🔹 Configure Authorization header
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -26,16 +41,16 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Check if user is authenticated on app load
+  // 🔹 Verify auth on app load
   useEffect(() => {
     const checkAuth = async () => {
       if (token) {
         try {
           const response = await axios.get('/api/auth/verify');
+
           if (response.data.success) {
             setUser(response.data.data.user);
           } else {
-            // Token is invalid, remove it
             localStorage.removeItem('token');
             setToken(null);
           }
@@ -51,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [token]);
 
+  // 🔹 Login
   const login = async (identifier, password) => {
     try {
       const response = await axios.post('/api/auth/login', {
@@ -60,42 +76,51 @@ export const AuthProvider = ({ children }) => {
 
       if (response.data.success) {
         const { user: userData, token: newToken } = response.data.data;
-        
+
         localStorage.setItem('token', newToken);
         setToken(newToken);
         setUser(userData);
-        
+
         toast.success('Login successful!');
         return { success: true, user: userData };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const message =
+        error.response?.data?.message || 'Login failed';
       toast.error(message);
       return { success: false, message };
     }
   };
 
+  // 🔹 Register
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post(
+        '/api/auth/register',
+        userData
+      );
 
       if (response.data.success) {
-        const { user: newUser, token: newToken } = response.data.data;
-        
+        const { user: newUser, token: newToken } =
+          response.data.data;
+
         localStorage.setItem('token', newToken);
         setToken(newToken);
         setUser(newUser);
-        
+
         toast.success('Registration successful!');
         return { success: true, user: newUser };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const message =
+        error.response?.data?.message ||
+        'Registration failed';
       toast.error(message);
       return { success: false, message };
     }
   };
 
+  // 🔹 Logout
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
@@ -104,35 +129,53 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully!');
   };
 
+  // 🔹 Update profile
   const updateProfile = async (profileData) => {
     try {
-      const response = await axios.put('/api/auth/profile', profileData);
-      
+      const response = await axios.put(
+        '/api/auth/profile',
+        profileData
+      );
+
       if (response.data.success) {
         setUser(response.data.data.user);
         toast.success('Profile updated successfully!');
-        return { success: true, user: response.data.data.user };
+        return {
+          success: true,
+          user: response.data.data.user
+        };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Profile update failed';
+      const message =
+        error.response?.data?.message ||
+        'Profile update failed';
       toast.error(message);
       return { success: false, message };
     }
   };
 
-  const changePassword = async (currentPassword, newPassword) => {
+  // 🔹 Change password
+  const changePassword = async (
+    currentPassword,
+    newPassword
+  ) => {
     try {
-      const response = await axios.put('/api/auth/change-password', {
-        currentPassword,
-        newPassword
-      });
-      
+      const response = await axios.put(
+        '/api/auth/change-password',
+        {
+          currentPassword,
+          newPassword
+        }
+      );
+
       if (response.data.success) {
         toast.success('Password changed successfully!');
         return { success: true };
       }
     } catch (error) {
-      const message = error.response?.data?.message || 'Password change failed';
+      const message =
+        error.response?.data?.message ||
+        'Password change failed';
       toast.error(message);
       return { success: false, message };
     }
