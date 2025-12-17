@@ -145,7 +145,6 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Check download limit
     if (file.isDownloadLimitReached()) {
       return res.status(410).json({ 
         error: 'Download limit reached',
